@@ -2,9 +2,21 @@ import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import FeatureCard from "@/components/FeatureCard";
 import { Bot, ShoppingCart, Lightbulb, Cpu, Zap, ArrowRight, Sparkles, Code, Wrench } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-lab.jpg";
 
 const Index = () => {
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate('/projects');
+  };
+
+  const handleWatchDemo = () => {
+    // For now, scroll to features section
+    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -33,12 +45,12 @@ const Index = () => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button variant="hero" size="xl">
+                <Button variant="hero" size="xl" onClick={handleGetStarted}>
                   Start Building
                   <ArrowRight className="w-5 h-5" />
                 </Button>
-                <Button variant="outline" size="xl">
-                  Watch Demo
+                <Button variant="outline" size="xl" onClick={handleWatchDemo}>
+                  Explore Features
                 </Button>
               </div>
 
@@ -63,7 +75,7 @@ const Index = () => {
               <img 
                 src={heroImage} 
                 alt="TinkerLab Hardware Innovation Platform" 
-                className="relative rounded-2xl shadow-elevated w-full animate-float"
+                className="relative rounded-2xl shadow-elevated w-full animate-float hover:scale-105 transition-transform duration-500 cursor-pointer"
               />
             </div>
           </div>
@@ -71,7 +83,7 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-muted/30">
+      <section id="features" className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">Everything You Need to Innovate</h2>
@@ -87,6 +99,7 @@ const Index = () => {
               description="Design and simulate circuits with our intuitive drag-and-drop interface."
               buttonText="Start Designing"
               buttonVariant="circuit"
+              navigateTo="/designer"
             />
             
             <FeatureCard
@@ -95,6 +108,7 @@ const Index = () => {
               description="Get instant help with coding, debugging, and project guidance from our AI."
               buttonText="Ask AI"
               buttonVariant="component"
+              navigateTo="/assistant"
             />
             
             <FeatureCard
@@ -103,6 +117,7 @@ const Index = () => {
               description="Browse components, create parts lists, and find the best prices."
               buttonText="Shop Now"
               buttonVariant="accent"
+              navigateTo="/store"
             />
             
             <FeatureCard
@@ -111,6 +126,7 @@ const Index = () => {
               description="Discover curated project ideas with difficulty levels and guides."
               buttonText="Get Inspired"
               buttonVariant="default"
+              navigateTo="/ideas"
             />
           </div>
         </div>
@@ -144,7 +160,7 @@ const Index = () => {
           <p className="text-xl mb-8 opacity-90">
             Join thousands of makers and engineers who are already using TinkerLab to bring their ideas to life.
           </p>
-          <Button variant="secondary" size="xl" className="shadow-elevated">
+          <Button variant="secondary" size="xl" className="shadow-elevated" onClick={handleGetStarted}>
             Get Started for Free
             <Zap className="w-5 h-5" />
           </Button>

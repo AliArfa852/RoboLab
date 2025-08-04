@@ -8,6 +8,7 @@ import Assistant from "./pages/Assistant";
 import Store from "./pages/Store";
 import Ideas from "./pages/Ideas";
 import Designer from "./pages/Designer";
+import Projects from "./pages/Projects";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/projects" element={<Projects />} />
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/store" element={<Store />} />
           <Route path="/ideas" element={<Ideas />} />

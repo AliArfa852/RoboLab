@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface FeatureCardProps {
   icon: LucideIcon;
@@ -9,6 +10,7 @@ interface FeatureCardProps {
   buttonText: string;
   buttonVariant?: "default" | "circuit" | "component" | "accent";
   className?: string;
+  navigateTo?: string;
 }
 
 const FeatureCard = ({ 
@@ -17,8 +19,17 @@ const FeatureCard = ({
   description, 
   buttonText, 
   buttonVariant = "default",
-  className = ""
+  className = "",
+  navigateTo
 }: FeatureCardProps) => {
+  const navigate = useNavigate();
+
+  const handleButtonClick = () => {
+    if (navigateTo) {
+      navigate(navigateTo);
+    }
+  };
+
   return (
     <Card className={`bg-gradient-card border-border hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 ${className}`}>
       <CardHeader className="text-center">
@@ -31,7 +42,7 @@ const FeatureCard = ({
         </CardDescription>
       </CardHeader>
       <CardContent className="text-center">
-        <Button variant={buttonVariant} className="w-full">
+        <Button variant={buttonVariant} className="w-full" onClick={handleButtonClick}>
           {buttonText}
         </Button>
       </CardContent>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,8 +34,19 @@ interface ProjectIdea {
 }
 
 const Ideas = () => {
+  const navigate = useNavigate();
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  const handleViewGuide = (ideaId: string) => {
+    // Navigate to a detailed guide page or show modal
+    console.log('Viewing guide for idea:', ideaId);
+  };
+
+  const handleGetParts = (ideaId: string) => {
+    // Navigate to store with pre-filtered components
+    navigate('/store');
+  };
 
   const projectIdeas: ProjectIdea[] = [
     {
@@ -260,10 +272,10 @@ const Ideas = () => {
                   </div>
 
                   <div className="flex space-x-2 pt-2">
-                    <Button variant="circuit" className="flex-1">
+                    <Button variant="circuit" className="flex-1" onClick={() => handleViewGuide(idea.id)}>
                       View Guide
                     </Button>
-                    <Button variant="outline" className="flex-1">
+                    <Button variant="outline" className="flex-1" onClick={() => handleGetParts(idea.id)}>
                       Get Parts
                     </Button>
                   </div>
