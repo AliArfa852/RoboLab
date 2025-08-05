@@ -17,7 +17,7 @@ const Assistant = () => {
     {
       id: '1',
       type: 'assistant',
-      content: "Hi! I'm your TinkerLab AI assistant. I can help you with circuit design, component selection, coding Arduino/ESP32, debugging issues, and generating project ideas. What would you like to work on today?",
+      content: "Hi! I'm your RoboLabPK AI assistant. I can help you with circuit design, component selection, coding Arduino/ESP32, debugging issues, and generating project ideas. What would you like to work on today?",
       timestamp: new Date()
     }
   ]);

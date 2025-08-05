@@ -35,11 +35,11 @@ const Index = () => {
                 <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
                   Build the Future with{" "}
                   <span className="bg-gradient-hero bg-clip-text text-transparent">
-                    TinkerLab
+                    RoboLabPK
                   </span>
                 </h1>
                 <p className="text-xl text-muted-foreground leading-relaxed">
-                  From circuit design to AI assistance, TinkerLab is your complete ecosystem for hardware innovation. 
+                  From circuit design to AI assistance, RoboLabPK is your complete ecosystem for hardware innovation. 
                   Design, learn, build, and shop - all in one place.
                 </p>
               </div>
@@ -74,7 +74,7 @@ const Index = () => {
               <div className="absolute inset-0 bg-gradient-hero rounded-2xl blur-3xl opacity-20 animate-pulse-glow"></div>
               <img 
                 src={heroImage} 
-                alt="TinkerLab Hardware Innovation Platform" 
+                alt="RoboLabPK Hardware Innovation Platform" 
                 className="relative rounded-2xl shadow-elevated w-full animate-float hover:scale-105 transition-transform duration-500 cursor-pointer"
               />
             </div>
@@ -88,7 +88,7 @@ const Index = () => {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">Everything You Need to Innovate</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              TinkerLab combines powerful tools with an intuitive interface to help you bring your hardware ideas to life.
+              RoboLabPK combines powerful tools with an intuitive interface to help you bring your hardware ideas to life.
             </p>
           </div>
 
@@ -158,7 +158,7 @@ const Index = () => {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to Start Building?</h2>
           <p className="text-xl mb-8 opacity-90">
-            Join thousands of makers and engineers who are already using TinkerLab to bring their ideas to life.
+            Join thousands of makers and engineers who are already using RoboLabPK to bring their ideas to life.
           </p>
           <Button variant="secondary" size="xl" className="shadow-elevated" onClick={handleGetStarted}>
             Get Started for Free
@@ -176,7 +176,7 @@ const Index = () => {
                 <div className="w-8 h-8 bg-gradient-hero rounded-lg flex items-center justify-center">
                   <Zap className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold">TinkerLab</span>
+                <span className="text-xl font-bold">RoboLabPK</span>
               </div>
               <p className="text-muted-foreground">
                 Empowering the next generation of hardware innovators.
@@ -215,7 +215,7 @@ const Index = () => {
           </div>
           
           <div className="border-t border-border mt-8 pt-8 text-center text-muted-foreground">
-            <p>&copy; 2024 TinkerLab. Building the future of hardware innovation.</p>
+            <p>&copy; 2024 RoboLabPK. Building the future of hardware innovation.</p>
           </div>
         </div>
       </footer>

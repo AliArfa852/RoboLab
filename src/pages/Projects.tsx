@@ -259,7 +259,7 @@ const Projects = () => {
               <FolderOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">No projects found</h3>
               <p className="text-muted-foreground mb-6">
-                Create your first project to get started with TinkerLab.
+                Create your first project to get started with RoboLabPK.
               </p>
               <Button variant="hero">
                 <Plus className="w-4 h-4" />

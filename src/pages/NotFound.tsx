@@ -31,7 +31,7 @@ const NotFound = () => {
           <h2 className="text-2xl font-semibold mb-4">Circuit Not Found</h2>
           <p className="text-muted-foreground mb-8">
             Looks like this component got disconnected from the main circuit. 
-            Let's get you back to the TinkerLab.
+            Let's get you back to the RoboLabPK.
           </p>
           
           <div className="space-y-3">
