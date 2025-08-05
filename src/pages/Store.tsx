@@ -185,7 +185,7 @@ const Store = () => {
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-primary">
-                        ₹{component.price}
+                        Rs.{component.price}
                       </div>
                       <div className="flex items-center space-x-1 text-sm text-muted-foreground">
                         <Star className="w-3 h-3 fill-current text-yellow-500" />
