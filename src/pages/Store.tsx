@@ -29,7 +29,7 @@ const Store = () => {
       id: "1",
       name: "Arduino Uno R3",
       category: "Microcontrollers",
-      price: 25.99,
+      price: 2199,
       rating: 4.8,
       image: "/placeholder.svg",
       description: "Original Arduino Uno R3 with USB cable. Perfect for beginners.",
@@ -40,7 +40,7 @@ const Store = () => {
       id: "2",
       name: "ESP32 DevKit",
       category: "Microcontrollers",
-      price: 12.99,
+      price: 1099,
       rating: 4.7,
       image: "/placeholder.svg",
       description: "WiFi + Bluetooth enabled microcontroller for IoT projects.",
@@ -51,7 +51,7 @@ const Store = () => {
       id: "3",
       name: "DHT22 Temperature Sensor",
       category: "Sensors",
-      price: 8.99,
+      price: 799,
       rating: 4.5,
       image: "/placeholder.svg",
       description: "High accuracy temperature and humidity sensor.",
@@ -62,7 +62,7 @@ const Store = () => {
       id: "4",
       name: "HC-SR04 Ultrasonic Sensor",
       category: "Sensors",
-      price: 3.99,
+      price: 349,
       rating: 4.6,
       image: "/placeholder.svg",
       description: "Non-contact distance measurement sensor.",
@@ -73,7 +73,7 @@ const Store = () => {
       id: "5",
       name: "Breadboard 830 Points",
       category: "Prototyping",
-      price: 4.99,
+      price: 449,
       rating: 4.4,
       image: "/placeholder.svg",
       description: "Half-size breadboard for circuit prototyping.",
@@ -84,7 +84,7 @@ const Store = () => {
       id: "6",
       name: "LED Kit (200pcs)",
       category: "Components",
-      price: 15.99,
+      price: 1399,
       rating: 4.3,
       image: "/placeholder.svg",
       description: "Assorted LED kit with multiple colors and sizes.",
@@ -185,7 +185,7 @@ const Store = () => {
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-primary">
-                        ${component.price}
+                        ₹{component.price}
                       </div>
                       <div className="flex items-center space-x-1 text-sm text-muted-foreground">
                         <Star className="w-3 h-3 fill-current text-yellow-500" />
