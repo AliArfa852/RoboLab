@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import FeatureCard from "@/components/FeatureCard";
 import { Bot, ShoppingCart, Lightbulb, Cpu, Zap, ArrowRight, Sparkles, Code, Wrench } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import heroImage from "@/assets/hero-lab.jpg";
 
 const Index = () => {
@@ -210,6 +210,7 @@ const Index = () => {
                 <li>Careers</li>
                 <li>Contact</li>
                 <li>Privacy</li>
+                <li><Link to="/cookies" className="hover:text-primary transition-colors">Cookies</Link></li>
               </ul>
             </div>
           </div>
