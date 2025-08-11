@@ -1,9 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { Zap, Menu, X, LogOut, User } from "lucide-react";
+import { Zap, Menu, X, LogOut, User, Settings } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -66,20 +74,36 @@ const Navigation = () => {
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2 text-foreground">
-                  <User className="w-4 h-4" />
-                  <span className="text-sm">Welcome back!</span>
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleSignOut}
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </Button>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {user.email?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="flex items-center">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <div className="flex items-center space-x-2">
                 <Link to="/auth">
@@ -129,6 +153,12 @@ const Navigation = () => {
                       <User className="w-4 h-4" />
                       <span className="text-sm">Welcome back!</span>
                     </div>
+                    <Link to="/settings" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="ghost" size="sm" className="w-full justify-start">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Settings
+                      </Button>
+                    </Link>
                     <Button 
                       variant="outline" 
                       size="sm" 

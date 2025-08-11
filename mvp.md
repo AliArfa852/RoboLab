@@ -154,6 +154,10 @@ RoboLabPK is a comprehensive hardware innovation platform that combines circuit 
 - Community forums and sharing
 - Advanced simulation features
 - Integration with manufacturing services
+- Coming Soon page for feature previews
+- Dark/Light theme switching
+- Personal settings and preferences
+- Gmail integration for notifications
 
 ### Integrations
 - GitHub for code projects
@@ -162,6 +166,8 @@ RoboLabPK is a comprehensive hardware innovation platform that combines circuit 
 - Payment processing for component orders
 - Shipping and logistics
 - Educational platform integrations
+- Google OAuth for Gmail connectivity
+- Theme system with system preference detection
 
 ## Technical Considerations
 
