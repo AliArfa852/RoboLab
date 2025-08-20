@@ -97,8 +97,8 @@ const Assistant = () => {
                       <div className="flex items-start space-x-2 w-full">
                         <prompt.icon className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                         <div className="min-w-0 flex-1 overflow-hidden">
-                          <div className="text-xs font-medium truncate">{prompt.category}</div>
-                          <div className="text-xs text-muted-foreground break-words hyphens-auto leading-tight">{prompt.text}</div>
+                          <div className="text-xs font-medium break-words">{prompt.category}</div>
+                          <div className="text-xs text-muted-foreground break-words leading-tight whitespace-normal">{prompt.text}</div>
                         </div>
                       </div>
                     </Button>
