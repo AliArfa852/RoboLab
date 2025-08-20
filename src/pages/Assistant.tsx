@@ -76,12 +76,12 @@ const Assistant = () => {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-4 gap-8">
+          <div className="grid lg:grid-cols-4 gap-6 lg:gap-8">
             {/* Quick Prompts Sidebar */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 order-2 lg:order-1">
               <Card className="bg-gradient-card border-border">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-base">
                     <Sparkles className="w-5 h-5 text-primary" />
                     Quick Start
                   </CardTitle>
@@ -94,11 +94,11 @@ const Assistant = () => {
                       className="w-full justify-start text-left h-auto p-3 hover:bg-primary/10"
                       onClick={() => handleQuickPrompt(prompt.text)}
                     >
-                      <div className="flex items-start space-x-3">
-                        <prompt.icon className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                        <div>
-                          <div className="text-sm font-medium">{prompt.category}</div>
-                          <div className="text-xs text-muted-foreground">{prompt.text}</div>
+                      <div className="flex items-start space-x-2 sm:space-x-3">
+                        <prompt.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary mt-0.5 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-medium">{prompt.category}</div>
+                          <div className="text-xs text-muted-foreground break-words overflow-wrap-anywhere">{prompt.text}</div>
                         </div>
                       </div>
                     </Button>
@@ -108,28 +108,28 @@ const Assistant = () => {
             </div>
 
             {/* Chat Interface */}
-            <div className="lg:col-span-3">
-              <Card className="bg-gradient-card border-border h-[600px] flex flex-col">
+            <div className="lg:col-span-3 order-1 lg:order-2">
+              <Card className="bg-gradient-card border-border h-[500px] sm:h-[600px] flex flex-col">
                 {/* Messages */}
-                <div className="flex-1 p-6 overflow-y-auto space-y-4">
+                <div className="flex-1 p-3 sm:p-6 overflow-y-auto space-y-4">
                   {messages.map((message) => (
                     <div
                       key={message.id}
                       className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-[80%] rounded-lg p-4 ${
+                        className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-3 sm:p-4 ${
                           message.type === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted text-muted-foreground'
                         }`}
                       >
-                        <div className="flex items-start space-x-3">
+                        <div className="flex items-start space-x-2 sm:space-x-3">
                           {message.type === 'assistant' && (
-                            <Bot className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                            <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0 mt-0.5" />
                           )}
-                          <div className="flex-1">
-                            <p className="text-sm">{message.content}</p>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm break-words overflow-wrap-anywhere">{message.content}</p>
                             <span className="text-xs opacity-70 mt-1 block">
                               {message.timestamp.toLocaleTimeString()}
                             </span>
@@ -141,20 +141,21 @@ const Assistant = () => {
                 </div>
 
                 {/* Input Area */}
-                <div className="border-t border-border p-4">
+                <div className="border-t border-border p-3 sm:p-4">
                   <div className="flex space-x-2">
                     <Input
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      placeholder="Ask about circuits, components, coding, or project ideas..."
+                      placeholder="Ask about circuits, components, coding..."
                       onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                      className="flex-1"
+                      className="flex-1 text-sm"
                     />
                     <Button
                       onClick={handleSendMessage}
                       disabled={!input.trim()}
                       variant="circuit"
                       size="icon"
+                      className="flex-shrink-0"
                     >
                       <Send className="w-4 h-4" />
                     </Button>
@@ -165,44 +166,44 @@ const Assistant = () => {
           </div>
 
           {/* Capabilities Section */}
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold text-center mb-8">What I Can Help With</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="mt-12 sm:mt-16">
+            <h2 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8">What I Can Help With</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <Card className="bg-gradient-card border-border hover:shadow-card transition-all duration-300">
-                <CardContent className="p-6 text-center">
-                  <Cpu className="w-8 h-8 text-primary mx-auto mb-3" />
-                  <h3 className="font-semibold mb-2">Circuit Design</h3>
-                  <p className="text-sm text-muted-foreground">
+                <CardContent className="p-4 sm:p-6 text-center">
+                  <Cpu className="w-6 h-6 sm:w-8 sm:h-8 text-primary mx-auto mb-3" />
+                  <h3 className="font-semibold mb-2 text-sm sm:text-base">Circuit Design</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Help with schematics, component selection, and circuit optimization.
                   </p>
                 </CardContent>
               </Card>
 
               <Card className="bg-gradient-card border-border hover:shadow-card transition-all duration-300">
-                <CardContent className="p-6 text-center">
-                  <Code className="w-8 h-8 text-secondary mx-auto mb-3" />
-                  <h3 className="font-semibold mb-2">Code Review</h3>
-                  <p className="text-sm text-muted-foreground">
+                <CardContent className="p-4 sm:p-6 text-center">
+                  <Code className="w-6 h-6 sm:w-8 sm:h-8 text-secondary mx-auto mb-3" />
+                  <h3 className="font-semibold mb-2 text-sm sm:text-base">Code Review</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Debug Arduino, ESP32, Raspberry Pi code and suggest improvements.
                   </p>
                 </CardContent>
               </Card>
 
               <Card className="bg-gradient-card border-border hover:shadow-card transition-all duration-300">
-                <CardContent className="p-6 text-center">
-                  <Lightbulb className="w-8 h-8 text-accent mx-auto mb-3" />
-                  <h3 className="font-semibold mb-2">Project Ideas</h3>
-                  <p className="text-sm text-muted-foreground">
+                <CardContent className="p-4 sm:p-6 text-center">
+                  <Lightbulb className="w-6 h-6 sm:w-8 sm:h-8 text-accent mx-auto mb-3" />
+                  <h3 className="font-semibold mb-2 text-sm sm:text-base">Project Ideas</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Generate creative project ideas based on your interests and skill level.
                   </p>
                 </CardContent>
               </Card>
 
               <Card className="bg-gradient-card border-border hover:shadow-card transition-all duration-300">
-                <CardContent className="p-6 text-center">
-                  <Zap className="w-8 h-8 text-primary mx-auto mb-3" />
-                  <h3 className="font-semibold mb-2">Troubleshooting</h3>
-                  <p className="text-sm text-muted-foreground">
+                <CardContent className="p-4 sm:p-6 text-center">
+                  <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-primary mx-auto mb-3" />
+                  <h3 className="font-semibold mb-2 text-sm sm:text-base">Troubleshooting</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Diagnose issues and provide step-by-step solutions.
                   </p>
                 </CardContent>
