@@ -22,6 +22,7 @@ const Assistant = () => {
     }
   ]);
   const [input, setInput] = useState("");
+  const [hasUserSentMessage, setHasUserSentMessage] = useState(false);
 
   const quickPrompts = [
     { icon: Cpu, text: "Help me design a temperature monitoring system", category: "Circuits" },
@@ -42,6 +43,7 @@ const Assistant = () => {
     
     setMessages(prev => [...prev, userMessage]);
     setInput("");
+    setHasUserSentMessage(true);
     
     // Simulate AI response
     setTimeout(() => {
@@ -58,6 +60,13 @@ const Assistant = () => {
   const handleQuickPrompt = (promptText: string) => {
     setInput(promptText);
   };
+
+  const capabilities = [
+    { icon: Cpu, title: "Circuit Design", description: "Help with schematics, component selection, and circuit optimization." },
+    { icon: Code, title: "Code Review", description: "Debug Arduino, ESP32, Raspberry Pi code and suggest improvements." },
+    { icon: Lightbulb, title: "Project Ideas", description: "Generate creative project ideas based on your interests and skill level." },
+    { icon: Zap, title: "Troubleshooting", description: "Diagnose issues and provide step-by-step solutions." }
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -138,6 +147,28 @@ const Assistant = () => {
                       </div>
                     </div>
                   ))}
+                  
+                  {/* Capabilities Section - Show until user sends first message */}
+                  {!hasUserSentMessage && (
+                    <div className="mt-6 sm:mt-8">
+                      <div className="text-center mb-4 sm:mb-6">
+                        <h3 className="text-base sm:text-lg font-semibold text-muted-foreground">What I Can Help With</h3>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        {capabilities.map((capability, index) => (
+                          <Card key={index} className="bg-gradient-card border-border hover:shadow-card transition-all duration-300">
+                            <CardContent className="p-3 sm:p-4 text-center">
+                              <capability.icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary mx-auto mb-2" />
+                              <h4 className="font-semibold mb-1 text-xs sm:text-sm">{capability.title}</h4>
+                              <p className="text-xs text-muted-foreground leading-tight">
+                                {capability.description}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Input Area */}
@@ -161,52 +192,6 @@ const Assistant = () => {
                     </Button>
                   </div>
                 </div>
-              </Card>
-            </div>
-          </div>
-
-          {/* Capabilities Section */}
-          <div className="mt-12 sm:mt-16">
-            <h2 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8">What I Can Help With</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              <Card className="bg-gradient-card border-border hover:shadow-card transition-all duration-300">
-                <CardContent className="p-4 sm:p-6 text-center">
-                  <Cpu className="w-6 h-6 sm:w-8 sm:h-8 text-primary mx-auto mb-3" />
-                  <h3 className="font-semibold mb-2 text-sm sm:text-base">Circuit Design</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    Help with schematics, component selection, and circuit optimization.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-card border-border hover:shadow-card transition-all duration-300">
-                <CardContent className="p-4 sm:p-6 text-center">
-                  <Code className="w-6 h-6 sm:w-8 sm:h-8 text-secondary mx-auto mb-3" />
-                  <h3 className="font-semibold mb-2 text-sm sm:text-base">Code Review</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    Debug Arduino, ESP32, Raspberry Pi code and suggest improvements.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-card border-border hover:shadow-card transition-all duration-300">
-                <CardContent className="p-4 sm:p-6 text-center">
-                  <Lightbulb className="w-6 h-6 sm:w-8 sm:h-8 text-accent mx-auto mb-3" />
-                  <h3 className="font-semibold mb-2 text-sm sm:text-base">Project Ideas</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    Generate creative project ideas based on your interests and skill level.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-card border-border hover:shadow-card transition-all duration-300">
-                <CardContent className="p-4 sm:p-6 text-center">
-                  <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-primary mx-auto mb-3" />
-                  <h3 className="font-semibold mb-2 text-sm sm:text-base">Troubleshooting</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    Diagnose issues and provide step-by-step solutions.
-                  </p>
-                </CardContent>
               </Card>
             </div>
           </div>
