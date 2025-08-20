@@ -91,14 +91,14 @@ const Assistant = () => {
                     <Button
                       key={index}
                       variant="ghost"
-                      className="w-full justify-start text-left h-auto p-3 hover:bg-primary/10"
+                      className="w-full justify-start text-left h-auto p-2 sm:p-3 hover:bg-primary/10 min-h-0"
                       onClick={() => handleQuickPrompt(prompt.text)}
                     >
-                      <div className="flex items-start space-x-2 sm:space-x-3">
-                        <prompt.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary mt-0.5 flex-shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <div className="text-xs sm:text-sm font-medium">{prompt.category}</div>
-                          <div className="text-xs text-muted-foreground break-words overflow-wrap-anywhere">{prompt.text}</div>
+                      <div className="flex items-start space-x-2 w-full">
+                        <prompt.icon className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                        <div className="min-w-0 flex-1 overflow-hidden">
+                          <div className="text-xs font-medium truncate">{prompt.category}</div>
+                          <div className="text-xs text-muted-foreground break-words hyphens-auto leading-tight">{prompt.text}</div>
                         </div>
                       </div>
                     </Button>
