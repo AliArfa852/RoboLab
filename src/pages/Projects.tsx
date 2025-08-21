@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
+import ProjectForm, { ProjectFormData } from "@/components/ProjectForm";
 import { 
   FolderOpen, 
   Clock, 
@@ -15,26 +16,37 @@ import {
   List,
   Play,
   Code,
-  Zap
+  Zap,
+  Edit,
+  Settings,
+  Lock,
+  Globe
 } from "lucide-react";
 
 interface Project {
   id: string;
   title: string;
   description: string;
-  status: "In Progress" | "Completed" | "Planned";
+  status: "In Progress" | "Completed" | "Planned" | "Draft";
   category: string;
   lastModified: string;
   components: string[];
   thumbnail: string;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
+  isPublic?: boolean;
+  estimatedCost?: number;
+  currency?: string;
+  tags?: string[];
+  toolStack?: string[];
 }
 
 const Projects = () => {
   const [view, setView] = useState<"grid" | "list">("grid");
   const [filter, setFilter] = useState<string>("all");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
 
-  const projects: Project[] = [
+  const [projects, setProjects] = useState<Project[]>([
     {
       id: "1",
       title: "Smart Home Controller",
@@ -44,7 +56,12 @@ const Projects = () => {
       lastModified: "2 hours ago",
       components: ["ESP32", "DHT22", "Relay Module", "OLED Display"],
       thumbnail: "/placeholder.svg",
-      difficulty: "Intermediate"
+      difficulty: "Intermediate",
+      isPublic: true,
+      estimatedCost: 45,
+      currency: "USD",
+      tags: ["IoT", "Home Automation", "ESP32"],
+      toolStack: ["Arduino IDE", "ESP32"]
     },
     {
       id: "2",
@@ -55,7 +72,12 @@ const Projects = () => {
       lastModified: "1 day ago",
       components: ["Arduino Uno", "LED Matrix", "RTC Module", "DHT11"],
       thumbnail: "/placeholder.svg",
-      difficulty: "Beginner"
+      difficulty: "Beginner",
+      isPublic: false,
+      estimatedCost: 25,
+      currency: "USD",
+      tags: ["Arduino", "LED", "Clock"],
+      toolStack: ["Arduino IDE"]
     },
     {
       id: "3",
@@ -66,19 +88,72 @@ const Projects = () => {
       lastModified: "3 days ago",
       components: ["Raspberry Pi", "Camera Module", "PIR Sensor"],
       thumbnail: "/placeholder.svg",
-      difficulty: "Advanced"
+      difficulty: "Advanced",
+      isPublic: false,
+      estimatedCost: 75,
+      currency: "USD",
+      tags: ["Raspberry Pi", "Security", "IoT"],
+      toolStack: ["Python", "OpenCV"]
     }
-  ];
+  ]);
 
   const filteredProjects = filter === "all" 
     ? projects 
     : projects.filter(project => project.status === filter);
+
+  const handleCreateProject = (data: ProjectFormData) => {
+    const newProject: Project = {
+      id: Date.now().toString(),
+      title: data.name,
+      description: data.description,
+      status: data.status,
+      category: data.tags[0] || "General",
+      lastModified: "Just now",
+      components: data.components.map(c => c.name),
+      thumbnail: "/placeholder.svg",
+      difficulty: data.difficultyLevel,
+      isPublic: data.isPublic,
+      estimatedCost: data.estimatedCost,
+      currency: data.currency,
+      tags: data.tags,
+      toolStack: data.toolStack
+    };
+    setProjects([newProject, ...projects]);
+  };
+
+  const handleEditProject = (data: ProjectFormData) => {
+    if (editingProject) {
+      const updatedProject: Project = {
+        ...editingProject,
+        title: data.name,
+        description: data.description,
+        status: data.status,
+        category: data.tags[0] || editingProject.category,
+        lastModified: "Just now",
+        components: data.components.map(c => c.name),
+        difficulty: data.difficultyLevel,
+        isPublic: data.isPublic,
+        estimatedCost: data.estimatedCost,
+        currency: data.currency,
+        tags: data.tags,
+        toolStack: data.toolStack
+      };
+      setProjects(projects.map(p => p.id === editingProject.id ? updatedProject : p));
+      setEditingProject(null);
+    }
+  };
+
+  const openEditForm = (project: Project) => {
+    setEditingProject(project);
+    setIsFormOpen(true);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "In Progress": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
       case "Completed": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
       case "Planned": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      case "Draft": return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
       default: return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
     }
   };
@@ -97,7 +172,11 @@ const Projects = () => {
                 Manage and track your hardware projects
               </p>
             </div>
-            <Button variant="hero" className="animate-pulse-glow">
+            <Button 
+              variant="hero" 
+              className="animate-pulse-glow"
+              onClick={() => setIsFormOpen(true)}
+            >
               <Plus className="w-4 h-4" />
               New Project
             </Button>
@@ -121,9 +200,10 @@ const Projects = () => {
                 className="px-3 py-2 border border-input rounded-md bg-background"
               >
                 <option value="all">All Status</option>
+                <option value="Draft">Draft</option>
+                <option value="Planned">Planned</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Completed">Completed</option>
-                <option value="Planned">Planned</option>
               </select>
               
               <div className="flex border border-input rounded-md">
@@ -161,16 +241,40 @@ const Projects = () => {
                     </div>
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                          {project.title}
-                        </CardTitle>
-                        <Badge className={getStatusColor(project.status)}>
-                          {project.status}
-                        </Badge>
+                        <div className="flex items-center gap-2 mb-2">
+                          <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                            {project.title}
+                          </CardTitle>
+                          {project.isPublic ? (
+                            <Globe className="w-4 h-4 text-green-600" />
+                          ) : (
+                            <Lock className="w-4 h-4 text-gray-400" />
+                          )}
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
+                          <Badge className={getStatusColor(project.status)}>
+                            {project.status}
+                          </Badge>
+                          <Badge variant="outline">
+                            {project.category}
+                          </Badge>
+                          {project.estimatedCost && (
+                            <Badge variant="secondary">
+                              {project.currency} {project.estimatedCost}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                      <Badge variant="outline">
-                        {project.category}
-                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditForm(project);
+                        }}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
                     </div>
                   </CardHeader>
                   
@@ -224,14 +328,26 @@ const Projects = () => {
                         <div className="w-12 h-12 bg-primary/10 rounded-md flex items-center justify-center">
                           <FolderOpen className="w-6 h-6 text-primary" />
                         </div>
-                        <div>
-                          <h3 className="font-semibold">{project.title}</h3>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold">{project.title}</h3>
+                            {project.isPublic ? (
+                              <Globe className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <Lock className="w-4 h-4 text-gray-400" />
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground">{project.description}</p>
-                          <div className="flex items-center space-x-2 mt-1">
+                          <div className="flex items-center space-x-2 mt-1 flex-wrap gap-1">
                             <Badge className={getStatusColor(project.status)}>
                               {project.status}
                             </Badge>
                             <Badge variant="outline">{project.category}</Badge>
+                            {project.estimatedCost && (
+                              <Badge variant="secondary">
+                                {project.currency} {project.estimatedCost}
+                              </Badge>
+                            )}
                             <span className="text-xs text-muted-foreground">
                               Modified {project.lastModified}
                             </span>
@@ -245,6 +361,16 @@ const Projects = () => {
                         </Button>
                         <Button variant="outline" size="sm">
                           <Code className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditForm(project);
+                          }}
+                        >
+                          <Edit className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
@@ -261,7 +387,7 @@ const Projects = () => {
               <p className="text-muted-foreground mb-6">
                 Create your first project to get started with RoboLabPK.
               </p>
-              <Button variant="hero">
+              <Button variant="hero" onClick={() => setIsFormOpen(true)}>
                 <Plus className="w-4 h-4" />
                 Create Project
               </Button>
@@ -269,6 +395,36 @@ const Projects = () => {
           )}
         </div>
       </div>
+
+      <ProjectForm
+        open={isFormOpen}
+        onOpenChange={(open) => {
+          setIsFormOpen(open);
+          if (!open) {
+            setEditingProject(null);
+          }
+        }}
+        onSubmit={editingProject ? handleEditProject : handleCreateProject}
+        initialData={editingProject ? {
+          name: editingProject.title,
+          description: editingProject.description,
+          tags: editingProject.tags || [],
+          toolStack: editingProject.toolStack || [],
+          components: editingProject.components.map(name => ({
+            name,
+            quantity: 1,
+            category: "Misc",
+            datasheet: ""
+          })),
+          estimatedCost: editingProject.estimatedCost || 0,
+          currency: editingProject.currency || "USD",
+          difficultyLevel: editingProject.difficulty,
+          estimatedTime: "Unknown",
+          status: editingProject.status as any,
+          isPublic: editingProject.isPublic || false
+        } : undefined}
+        mode={editingProject ? "edit" : "create"}
+      />
     </div>
   );
 };
