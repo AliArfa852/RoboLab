@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Navigation from "@/components/Navigation";
@@ -14,12 +14,16 @@ import {
   RotateCcw,
   Grid3X3,
   Layers,
-  Settings
+  Settings,
+  Timer as TimerIcon
 } from "lucide-react";
+import { useDesigner } from "@/hooks/useDesigner";
+import { defaultComponentPalette } from "@/lib/sim/registry";
 
 const Designer = () => {
   const [selectedTool, setSelectedTool] = useState<string>("select");
-  const [isSimulating, setIsSimulating] = useState(false);
+  const { graph, start, stop, isRunning, addComponent, importGraph, exportGraph } = useDesigner();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const tools = [
     { id: "select", name: "Select", icon: Square },
@@ -29,13 +33,35 @@ const Designer = () => {
     { id: "arduino", name: "Arduino", icon: Cpu },
   ];
 
-  const components = [
-    { name: "Arduino Uno", category: "Microcontrollers", icon: Cpu },
-    { name: "Resistor 220Ω", category: "Passive", icon: Circle },
-    { name: "LED", category: "Output", icon: Circle },
-    { name: "Button", category: "Input", icon: Square },
-    { name: "Breadboard", category: "Prototyping", icon: Grid3X3 },
-  ];
+  const palette = defaultComponentPalette;
+  const typeToIcon: Record<string, any> = {
+    vcc5: Zap,
+    button: Square,
+    led: Circle,
+    timer: TimerIcon,
+  };
+
+  const handleImportClick = () => fileInputRef.current?.click();
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const text = await file.text();
+    importGraph(text);
+    e.target.value = "";
+  };
+
+  const handleExport = () => {
+    const json = exportGraph();
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "circuit.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,7 +83,8 @@ const Designer = () => {
               </div>
               
               <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm">
+                <input ref={fileInputRef} onChange={handleImportFile} type="file" accept="application/json" className="hidden" />
+                <Button variant="outline" size="sm" onClick={handleImportClick}>
                   <Upload className="w-4 h-4" />
                   Import
                 </Button>
@@ -65,17 +92,17 @@ const Designer = () => {
                   <Save className="w-4 h-4" />
                   Save
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleExport}>
                   <Download className="w-4 h-4" />
                   Export
                 </Button>
                 <Button 
-                  variant={isSimulating ? "destructive" : "circuit"}
+                  variant={isRunning ? "destructive" : "circuit"}
                   size="sm"
-                  onClick={() => setIsSimulating(!isSimulating)}
+                  onClick={() => (isRunning ? stop() : start())}
                 >
-                  {isSimulating ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                  {isSimulating ? "Stop" : "Simulate"}
+                  {isRunning ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                  {isRunning ? "Stop" : "Simulate"}
                 </Button>
               </div>
             </div>
@@ -117,19 +144,23 @@ const Designer = () => {
                 Components
               </h3>
               <div className="space-y-2">
-                {components.map((component, index) => (
+                {palette.map((component, index) => (
                   <Card 
                     key={index} 
                     className="cursor-pointer hover:bg-accent/50 transition-colors border-border"
+                    onClick={() => addComponent(component.type)}
                   >
                     <CardContent className="p-3">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-primary/10 rounded-md flex items-center justify-center">
-                          <component.icon className="w-4 h-4 text-primary" />
+                          {(() => {
+                            const Icon = typeToIcon[component.type] ?? Layers;
+                            return <Icon className="w-4 h-4 text-primary" />;
+                          })()}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm">{component.name}</div>
-                          <div className="text-xs text-muted-foreground">{component.category}</div>
+                          <div className="text-xs text-muted-foreground">{component.type}</div>
                         </div>
                       </div>
                     </CardContent>
@@ -171,7 +202,7 @@ const Designer = () => {
             </div>
 
             {/* Simulation Status */}
-            {isSimulating && (
+            {isRunning && (
               <div className="absolute top-4 right-4">
                 <Card className="bg-circuit-trace/90 backdrop-blur-sm border-circuit-trace">
                   <CardContent className="p-3 flex items-center space-x-3">
@@ -209,11 +240,15 @@ const Designer = () => {
                   <CardContent className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Components:</span>
-                      <span>0</span>
+                      <span>{graph.components.length}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Connections:</span>
-                      <span>0</span>
+                      <span>{graph.connections.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Jumpers:</span>
+                      <span>{graph.jumpers?.length ?? 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Power:</span>
@@ -227,17 +262,17 @@ const Designer = () => {
                     <CardTitle className="text-sm">Quick Actions</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => addComponent("vcc5") }>
                       <Cpu className="w-4 h-4" />
-                      Add Microcontroller
+                      Add +5V Source
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => addComponent("led") }>
                       <Circle className="w-4 h-4" />
                       Add LED
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      <Grid3X3 className="w-4 h-4" />
-                      Add Breadboard
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => addComponent("timer") }>
+                      <TimerIcon className="w-4 h-4" />
+                      Add Timer
                     </Button>
                   </CardContent>
                 </Card>
