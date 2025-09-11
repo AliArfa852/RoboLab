@@ -19,10 +19,13 @@ import {
 } from "lucide-react";
 import { useDesigner } from "@/hooks/useDesigner";
 import { defaultComponentPalette } from "@/lib/sim/registry";
+import CircuitCanvas from "@/components/CircuitCanvas";
+import { useAnalyzer } from "@/hooks/useAnalyzer";
 
 const Designer = () => {
   const [selectedTool, setSelectedTool] = useState<string>("select");
-  const { graph, start, stop, isRunning, addComponent, importGraph, exportGraph } = useDesigner();
+  const { graph, start, stop, isRunning, addComponent, importGraph, exportGraph, addJumper, snapshot } = useDesigner();
+  const { diagnostics, loading, error, analyze } = useAnalyzer(graph, snapshot);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const tools = [
@@ -104,6 +107,9 @@ const Designer = () => {
                   {isRunning ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                   {isRunning ? "Stop" : "Simulate"}
                 </Button>
+                <Button variant="outline" size="sm" onClick={analyze} disabled={loading}>
+                  Analyze with AI
+                </Button>
               </div>
             </div>
           </div>
@@ -174,31 +180,14 @@ const Designer = () => {
           <div className="flex-1 relative">
             {/* Circuit Canvas */}
             <div className="absolute inset-0 bg-circuit-bg bg-circuit-pattern">
-              <div className="w-full h-full flex items-center justify-center">
-                <Card className="bg-card/90 backdrop-blur-sm border-2 border-dashed border-border">
-                  <CardContent className="p-12 text-center">
-                    <div className="w-16 h-16 bg-gradient-glow rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Cpu className="w-8 h-8 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-semibold mb-2">Start Designing Your Circuit</h3>
-                    <p className="text-muted-foreground mb-6 max-w-md">
-                      Drag components from the sidebar to start building your circuit. 
-                      Connect them with wires and simulate your design.
-                    </p>
-                    <div className="space-y-3">
-                      <Button variant="circuit" className="w-full">
-                        Add Arduino Uno
-                      </Button>
-                      <Button variant="outline" className="w-full">
-                        Import Existing Design
-                      </Button>
-                      <Button variant="ghost" className="w-full">
-                        View Tutorials
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+              <CircuitCanvas 
+                graph={graph}
+                onAddJumper={(ends) => {
+                  if (selectedTool === "wire") {
+                    addJumper(ends);
+                  }
+                }}
+              />
             </div>
 
             {/* Simulation Status */}
@@ -254,6 +243,26 @@ const Designer = () => {
                       <span className="text-muted-foreground">Power:</span>
                       <span className="text-accent">5V</span>
                     </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">Diagnostics</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    {error && <div className="text-red-500">{error}</div>}
+                    {diagnostics.length === 0 ? (
+                      <div className="text-muted-foreground">No diagnostics</div>
+                    ) : (
+                      <ul className="list-disc pl-4 space-y-1">
+                        {diagnostics.map((d) => (
+                          <li key={d.id} className={`${d.severity === "error" ? "text-red-500" : d.severity === "warning" ? "text-yellow-600" : "text-muted-foreground"}`}>
+                            <span className="font-medium">[{d.severity}]</span> {d.message}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </CardContent>
                 </Card>
 
