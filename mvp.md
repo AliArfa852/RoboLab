@@ -32,9 +32,12 @@ RoboLabPK is a comprehensive hardware innovation platform that combines circuit 
   - Save/load circuit designs
 
 ### 4. AI Assistant 🔄
-- **Status**: Basic UI complete, needs AI integration
+- **Status**: Basic UI complete, quota system implemented
 - **MVP Requirements**:
   - Chat interface for hardware questions
+  - **LIMITED FREE USAGE**: 10 prompts per day during beta
+  - Real-time usage tracking with progress bar
+  - Authentication required for AI features
   - Code help and debugging assistance
   - Component recommendations
   - Project guidance and troubleshooting
