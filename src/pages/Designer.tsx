@@ -1,7 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import Navigation from "@/components/Navigation";
+import VirtualCircuitBoard from "@/components/VirtualCircuitBoard";
+import { ApiService, CircuitData } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Cpu, 
   Save, 
@@ -14,238 +21,177 @@ import {
   RotateCcw,
   Grid3X3,
   Layers,
-  Settings
+  Settings,
+  Loader2
 } from "lucide-react";
 
 const Designer = () => {
-  const [selectedTool, setSelectedTool] = useState<string>("select");
-  const [isSimulating, setIsSimulating] = useState(false);
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [circuitName, setCircuitName] = useState("Untitled Circuit");
+  const [circuitDescription, setCircuitDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  const tools = [
-    { id: "select", name: "Select", icon: Square },
-    { id: "wire", name: "Wire", icon: Zap },
-    { id: "resistor", name: "Resistor", icon: Circle },
-    { id: "led", name: "LED", icon: Circle },
-    { id: "arduino", name: "Arduino", icon: Cpu },
-  ];
+  // Create new project
+  const createNewProject = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to create projects.",
+        variant: "destructive"
+      });
+      return;
+    }
 
-  const components = [
-    { name: "Arduino Uno", category: "Microcontrollers", icon: Cpu },
-    { name: "Resistor 220Ω", category: "Passive", icon: Circle },
-    { name: "LED", category: "Output", icon: Circle },
-    { name: "Button", category: "Input", icon: Square },
-    { name: "Breadboard", category: "Prototyping", icon: Grid3X3 },
-  ];
+    try {
+      setLoading(true);
+      const response = await ApiService.createProject({
+        title: circuitName,
+        description: circuitDescription,
+        isPublic: false,
+        tags: ['circuit', 'design']
+      });
+
+      if (response.success && response.data) {
+        setProjectId(response.data.id);
+        toast({
+          title: "Project Created",
+          description: "New project created successfully.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create project. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Save circuit data
+  const handleSaveCircuit = async (circuitData: CircuitData) => {
+    if (!projectId) {
+      await createNewProject();
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const response = await ApiService.createCircuit({
+        projectId,
+        name: circuitData.metadata.name,
+        circuitJson: circuitData
+      });
+
+      if (response.success) {
+        toast({
+          title: "Circuit Saved",
+          description: "Your circuit has been saved successfully.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Save Failed",
+        description: "Failed to save circuit. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Load circuit data
+  const handleLoadCircuit = async (): Promise<CircuitData | null> => {
+    if (!projectId) return null;
+
+    try {
+      // This would load from the project's circuits
+      // For now, return null to start fresh
+      return null;
+    } catch (error) {
+      console.error('Error loading circuit:', error);
+      return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <div className="pt-16 h-screen flex flex-col">
-        {/* Header */}
-        <div className="border-b border-border bg-card">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-4">
-                <div className="w-8 h-8 bg-gradient-hero rounded-lg flex items-center justify-center">
-                  <Cpu className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold">Circuit Designer</h1>
-                  <p className="text-sm text-muted-foreground">Untitled Circuit</p>
-                </div>
+      {/* Project Setup Modal */}
+      {!projectId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-md mx-4">
+            <CardHeader>
+              <CardTitle>Create New Circuit Project</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="circuit-name">Circuit Name</Label>
+                <Input
+                  id="circuit-name"
+                  value={circuitName}
+                  onChange={(e) => setCircuitName(e.target.value)}
+                  placeholder="Enter circuit name"
+                />
               </div>
-              
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm">
-                  <Upload className="w-4 h-4" />
-                  Import
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Save className="w-4 h-4" />
-                  Save
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="w-4 h-4" />
-                  Export
-                </Button>
-                <Button 
-                  variant={isSimulating ? "destructive" : "circuit"}
-                  size="sm"
-                  onClick={() => setIsSimulating(!isSimulating)}
-                >
-                  {isSimulating ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                  {isSimulating ? "Stop" : "Simulate"}
-                </Button>
+              <div>
+                <Label htmlFor="circuit-description">Description (Optional)</Label>
+                <Textarea
+                  id="circuit-description"
+                  value={circuitDescription}
+                  onChange={(e) => setCircuitDescription(e.target.value)}
+                  placeholder="Enter circuit description"
+                  rows={3}
+                />
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex-1 flex">
-          {/* Tools Sidebar */}
-          <div className="w-16 border-r border-border bg-card">
-            <div className="p-2 space-y-2">
-              {tools.map((tool) => (
+              <div className="flex space-x-2">
                 <Button
-                  key={tool.id}
-                  variant={selectedTool === tool.id ? "default" : "ghost"}
-                  size="icon"
-                  className="w-12 h-12"
-                  onClick={() => setSelectedTool(tool.id)}
-                  title={tool.name}
+                  onClick={createNewProject}
+                  disabled={loading || !circuitName.trim()}
+                  className="flex-1"
                 >
-                  <tool.icon className="w-5 h-5" />
+                  {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  Create Project
                 </Button>
-              ))}
-              <div className="border-t border-border pt-2 mt-4">
-                <Button variant="ghost" size="icon" className="w-12 h-12" title="Undo">
-                  <RotateCcw className="w-5 h-5" />
+                <Button
+                  variant="outline"
+                  onClick={() => setProjectId('temp')}
+                  className="flex-1"
+                >
+                  Start Without Saving
                 </Button>
-                <Button variant="ghost" size="icon" className="w-12 h-12" title="Settings">
-                  <Settings className="w-5 h-5" />
-                </Button>
               </div>
-            </div>
-          </div>
-
-          {/* Components Panel */}
-          <div className="w-64 border-r border-border bg-card">
-            <div className="p-4">
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <Layers className="w-4 h-4" />
-                Components
-              </h3>
-              <div className="space-y-2">
-                {components.map((component, index) => (
-                  <Card 
-                    key={index} 
-                    className="cursor-pointer hover:bg-accent/50 transition-colors border-border"
-                  >
-                    <CardContent className="p-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-primary/10 rounded-md flex items-center justify-center">
-                          <component.icon className="w-4 h-4 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm">{component.name}</div>
-                          <div className="text-xs text-muted-foreground">{component.category}</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Canvas Area */}
-          <div className="flex-1 relative">
-            {/* Circuit Canvas */}
-            <div className="absolute inset-0 bg-circuit-bg bg-circuit-pattern">
-              <div className="w-full h-full flex items-center justify-center">
-                <Card className="bg-card/90 backdrop-blur-sm border-2 border-dashed border-border">
-                  <CardContent className="p-12 text-center">
-                    <div className="w-16 h-16 bg-gradient-glow rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Cpu className="w-8 h-8 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-semibold mb-2">Start Designing Your Circuit</h3>
-                    <p className="text-muted-foreground mb-6 max-w-md">
-                      Drag components from the sidebar to start building your circuit. 
-                      Connect them with wires and simulate your design.
-                    </p>
-                    <div className="space-y-3">
-                      <Button variant="circuit" className="w-full">
-                        Add Arduino Uno
-                      </Button>
-                      <Button variant="outline" className="w-full">
-                        Import Existing Design
-                      </Button>
-                      <Button variant="ghost" className="w-full">
-                        View Tutorials
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-
-            {/* Simulation Status */}
-            {isSimulating && (
-              <div className="absolute top-4 right-4">
-                <Card className="bg-circuit-trace/90 backdrop-blur-sm border-circuit-trace">
-                  <CardContent className="p-3 flex items-center space-x-3">
-                    <div className="w-3 h-3 bg-accent rounded-full animate-pulse"></div>
-                    <span className="text-white font-medium">Simulation Running</span>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {/* Grid Controls */}
-            <div className="absolute bottom-4 left-4">
-              <Card className="bg-card/90 backdrop-blur-sm">
-                <CardContent className="p-3">
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Grid3X3 className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Grid: ON</span>
-                    <span className="text-muted-foreground">|</span>
-                    <span className="text-muted-foreground">Zoom: 100%</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Properties Panel */}
-          <div className="w-64 border-l border-border bg-card">
-            <div className="p-4">
-              <h3 className="font-semibold mb-4">Properties</h3>
-              <div className="space-y-4">
-                <Card className="border-border">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Circuit Info</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Components:</span>
-                      <span>0</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Connections:</span>
-                      <span>0</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Power:</span>
-                      <span className="text-accent">5V</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-border">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      <Cpu className="w-4 h-4" />
-                      Add Microcontroller
-                    </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      <Circle className="w-4 h-4" />
-                      Add LED
-                    </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      <Grid3X3 className="w-4 h-4" />
-                      Add Breadboard
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
+      )}
+
+      {/* Virtual Circuit Board */}
+      <div className="pt-16">
+        <VirtualCircuitBoard
+          projectId={projectId || undefined}
+          onSave={handleSaveCircuit}
+          onLoad={handleLoadCircuit}
+          readOnly={!user}
+        />
       </div>
+
+      {/* Save Status */}
+      {saving && (
+        <div className="fixed bottom-4 right-4 z-40">
+          <Card className="bg-blue-500/90 text-white">
+            <CardContent className="p-3 flex items-center space-x-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm font-medium">Saving circuit...</span>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

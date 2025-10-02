@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { ApiService, AIUsage } from "@/lib/api";
 import Navigation from "@/components/Navigation";
-import { Bot, Send, Sparkles, Code, Cpu, Lightbulb, Zap } from "lucide-react";
+import { Bot, Send, Sparkles, Code, Cpu, Lightbulb, Zap, Loader2 } from "lucide-react";
 
 interface Message {
   id: string;
@@ -27,8 +28,9 @@ const Assistant = () => {
   ]);
   const [input, setInput] = useState("");
   const [hasUserSentMessage, setHasUserSentMessage] = useState(false);
-  const [aiQuota, setAiQuota] = useState({ used: 0, remaining: 10, limit: 10 });
+  const [aiQuota, setAiQuota] = useState<AIUsage | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -50,14 +52,16 @@ const Assistant = () => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase.functions.invoke('check-ai-quota', {
-        body: { action: 'check' }
-      });
+      const response = await ApiService.getAIUsage();
       
-      if (error) throw error;
-      setAiQuota(data);
+      if (response.success && response.data) {
+        setAiQuota(response.data);
+      } else {
+        throw new Error(response.error || 'Failed to get AI usage');
+      }
     } catch (error) {
       console.error('Error checking AI quota:', error);
+      setError('Failed to load AI usage information');
     }
   };
 
@@ -73,26 +77,19 @@ const Assistant = () => {
       return;
     }
 
-    if (aiQuota.remaining <= 0) {
+    if (aiQuota && aiQuota.remainingPrompts <= 0) {
       toast({
         title: "Daily Limit Reached",
-        description: "You've reached your daily limit of 10 AI prompts. Try again tomorrow!",
+        description: "You've reached your daily limit of AI prompts. Try again tomorrow!",
         variant: "destructive"
       });
       return;
     }
 
     setIsLoading(true);
+    setError(null);
     
     try {
-      // Increment usage first
-      const { data, error } = await supabase.functions.invoke('check-ai-quota', {
-        body: { action: 'increment' }
-      });
-      
-      if (error) throw error;
-      setAiQuota(data);
-
       const userMessage: Message = {
         id: Date.now().toString(),
         type: 'user',
@@ -101,28 +98,39 @@ const Assistant = () => {
       };
       
       setMessages(prev => [...prev, userMessage]);
+      const currentInput = input;
       setInput("");
       setHasUserSentMessage(true);
       
-      // Simulate AI response
-      setTimeout(() => {
+      // Send message to AI
+      const response = await ApiService.chatWithAI(currentInput);
+      
+      if (response.success && response.data) {
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           type: 'assistant',
-          content: `That's a great question about "${input}". I'd be happy to help! Let me provide you with a detailed solution...`,
+          content: response.data.message,
           timestamp: new Date()
         };
         setMessages(prev => [...prev, assistantMessage]);
-        setIsLoading(false);
-      }, 1000);
+        
+        // Update AI usage
+        if (response.data.usage) {
+          setAiQuota(response.data.usage);
+        }
+      } else {
+        throw new Error(response.error || 'Failed to get AI response');
+      }
       
     } catch (error: any) {
       console.error('Error sending message:', error);
+      setError(error.message || "Failed to send message");
       toast({
         title: "Error",
         description: error.message || "Failed to send message",
         variant: "destructive"
       });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -189,24 +197,33 @@ const Assistant = () => {
             {/* Chat Interface */}
             <div className="lg:col-span-3 order-1 lg:order-2">
               <Card className="bg-gradient-card border-border h-[500px] sm:h-[600px] flex flex-col">
+                {/* Error State */}
+                {error && (
+                  <div className="p-3 sm:p-4 border-b border-border bg-destructive/10">
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  </div>
+                )}
+
                 {/* Usage Bar */}
-                {user && (
+                {user && aiQuota && (
                   <div className="p-3 sm:p-4 border-b border-border bg-muted/30">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-foreground">
                         Daily AI Usage (Beta)
                       </span>
                       <span className="text-sm text-muted-foreground">
-                        {aiQuota.used}/{aiQuota.limit} prompts
+                        {aiQuota.promptsUsed}/{aiQuota.promptsUsed + aiQuota.remainingPrompts} prompts
                       </span>
                     </div>
                     <Progress 
-                      value={(aiQuota.used / aiQuota.limit) * 100} 
+                      value={(aiQuota.promptsUsed / (aiQuota.promptsUsed + aiQuota.remainingPrompts)) * 100} 
                       className="h-2"
                     />
                     <div className="mt-1 text-xs text-muted-foreground">
-                      {aiQuota.remaining > 0 
-                        ? `${aiQuota.remaining} prompts remaining today`
+                      {aiQuota.remainingPrompts > 0 
+                        ? `${aiQuota.remainingPrompts} prompts remaining today`
                         : "Daily limit reached. Resets tomorrow!"
                       }
                     </div>
@@ -277,12 +294,16 @@ const Assistant = () => {
                     />
                     <Button
                       onClick={handleSendMessage}
-                      disabled={isLoading || !input.trim() || (user && aiQuota.remaining <= 0)}
+                      disabled={isLoading || !input.trim() || (user && aiQuota && aiQuota.remainingPrompts <= 0)}
                       variant="circuit"
                       size="icon"
                       className="flex-shrink-0"
                     >
-                      <Send className="w-4 h-4" />
+                      {isLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
